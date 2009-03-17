@@ -22,9 +22,6 @@
 
 #include "nitf/ImageIO.h"
 
-/*============================================================================*/
-/*==================== Declarations  =========================================*/
-/*============================================================================*/
 
 /*!
   \file
@@ -1420,21 +1417,6 @@ NITFPROT(int) nitf_ImageIO_readMaskHeader(_nitf_ImageIO * nitf, nitf_IOHandle ha
 /*!< IO handle for reads */
 NITFPROT(int) nitf_ImageIO_writeMasks(_nitf_ImageIO * nitf, nitf_IOHandle handle, nitf_Error * error    /*!< Used for error handling */
                                      );
-
-/*!
-  \brief nitf_ImageIO_swapMaskHeader - Byte swap the mask header
-
-  nitf_ImageIO_swapMaskHeader byte swaps the mask header. The mask
-  header, which is a binary structure in the NITF file, needs to
-  be byte swapped in little endian machines. Swapping is required
-  before writing and afetr reading
-
-  \return None
-*/
-
-/*<! the header to byte swap */
-NITFPROT(void) nitf_ImageIO_swapMaskHeader(_nitf_ImageIO_MaskHeader *
-        header);
 
 /*!
   \brief nitf_ImageIO_oneRead      Do the read request as a single read
@@ -5741,9 +5723,6 @@ NITFPROT(int) nitf_ImageIO_initMaskHeader(_nitf_ImageIO * nitf,
     return (1);
 }
 
-
-/*========================= nitf_ImageIO_readMaskHeader ======================*/
-
 NITFPROT(int) nitf_ImageIO_readMaskHeader(_nitf_ImageIO * nitf,
         nitf_IOHandle handle,
         nitf_Error * error)
@@ -5764,17 +5743,24 @@ NITFPROT(int) nitf_ImageIO_readMaskHeader(_nitf_ImageIO * nitf,
 
     bp = buffer;
     memcpy(&(maskHeader->imageDataOffset), bp, sizeof(nitf_Uint32));
+    
+    maskHeader->imageDataOffset = 
+        NITF_NTOHL(maskHeader->imageDataOffset);
     bp += 4;
+
     memcpy(&(maskHeader->blockRecordLength), bp, sizeof(nitf_Uint16));
+    maskHeader->blockRecordLength = 
+        NITF_NTOHS(maskHeader->blockRecordLength);
     bp += 2;
+
     memcpy(&(maskHeader->padRecordLength), bp, sizeof(nitf_Uint16));
+    maskHeader->padRecordLength = 
+        NITF_NTOHS(maskHeader->padRecordLength);
     bp += 2;
+
     memcpy(&(maskHeader->padPixelValueLength), bp, sizeof(nitf_Uint16));
-
-    /*      Byte swap structure  if needed */
-
-    if (!nitf_ImageIO_bigEndian())
-        nitf_ImageIO_swapMaskHeader(maskHeader);
+    maskHeader->padPixelValueLength = 
+        NITF_NTOHS(maskHeader->padPixelValueLength);
 
     /*
        The pad pixel value length is in bits and the structure field is in
@@ -5828,14 +5814,18 @@ NITFPROT(int) nitf_ImageIO_writeMasks(_nitf_ImageIO * nitf,
              | NITF_IMAGE_IO_COMPRESSION_M8)) == 0 /* No masks */ )
         return (1);
 
-    /*      A copy of the structure is made so it can be byte swapped if needed */
-
     maskHeader = nitf->maskHeader;
-    if (!nitf_ImageIO_bigEndian())
-        nitf_ImageIO_swapMaskHeader(&maskHeader);
+
+    maskHeader.imageDataOffset = 
+        NITF_HTONL(maskHeader.imageDataOffset);
+    maskHeader.blockRecordLength = 
+        NITF_HTONS(maskHeader.blockRecordLength);
+    maskHeader.padRecordLength = 
+        NITF_HTONS(maskHeader.padRecordLength);
+    maskHeader.padPixelValueLength = 
+        NITF_HTONS(maskHeader.padPixelValueLength);
 
     /*      Format and write the header buffer */
-
     buffer[0] = ((nitf_Uint8 *) & maskHeader.imageDataOffset)[0];
     buffer[1] = ((nitf_Uint8 *) & maskHeader.imageDataOffset)[1];
     buffer[2] = ((nitf_Uint8 *) & maskHeader.imageDataOffset)[2];
@@ -5991,40 +5981,6 @@ NITFPROT(int) nitf_ImageIO_writeMasks(_nitf_ImageIO * nitf,
     return (1);
 }
 
-
-/*========================= nitf_ImageIO_swapMaskHeader ======================*/
-
-NITFPROT(void) nitf_ImageIO_swapMaskHeader(_nitf_ImageIO_MaskHeader *
-        header)
-{
-    nitf_Uint8 *hp;             /* Points into header */
-    nitf_Uint8 tmp;             /* Temp value for byte swaps */
-
-    hp = (nitf_Uint8 *) & (header->imageDataOffset);
-    tmp = hp[0];
-    hp[0] = hp[3];
-    hp[3] = tmp;
-    tmp = hp[1];
-    hp[1] = hp[2];
-    hp[2] = tmp;
-
-    hp = (nitf_Uint8 *) & (header->blockRecordLength);
-    tmp = hp[0];
-    hp[0] = hp[1];
-    hp[1] = tmp;
-
-    hp = (nitf_Uint8 *) & (header->padRecordLength);
-    tmp = hp[0];
-    hp[0] = hp[1];
-    hp[1] = tmp;
-
-    hp = (nitf_Uint8 *) & (header->padPixelValueLength);
-    tmp = hp[0];
-    hp[0] = hp[1];
-    hp[1] = tmp;
-
-    return;
-}
 
 
 /*========================= nitf_ImageIO_oneRead =============================*/
