@@ -147,3 +147,28 @@ NITFAPI(NITF_BOOL) nitf_Utils_isAlpha(char *str)
     while(sp > str);
     return 1;
 }
+
+NITFAPI(void) nitf_Utils_trimString(char *str)
+{
+    nitf_Uint32 len;            /* Length of the string */
+    char *strp;                 /* Pointer into the string */
+    nitf_Uint32 i;
+
+    /* strip the end */
+    strp = (char *) (str + strlen(str) - 1);
+    while (isspace(*strp) && strp != str)
+        *(strp--) = 0;
+
+    /* strip the front */
+    len = strlen(str);
+    strp = str;
+    for (i = 0; i < len && isspace(*strp); ++i)
+        strp++;
+    if (strp != str)
+    {
+        len = str + len - strp;
+        memmove(str, strp, len);
+        str[len] = 0;
+    }
+    return;
+}
