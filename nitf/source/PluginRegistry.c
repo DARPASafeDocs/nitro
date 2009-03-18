@@ -500,57 +500,47 @@ NITFAPI(NITF_BOOL)
 
 
 NITFAPI(NITF_BOOL)
-nitf_PluginRegistry_registerTREHandler(nitf_PluginRegistry* reg,
-                                       const char* ident, 
-                                       NITF_PLUGIN_TRE_HANDLER_FUNCTION fn,
+nitf_PluginRegistry_registerTREHandler(NITF_PLUGIN_INIT_FUNCTION init,
+                                       NITF_PLUGIN_TRE_HANDLER_FUNCTION handle,
                                        nitf_Error * error)
 {
     
-#if NITF_DEBUG_PLUGIN_REG
-    if (nitf_HashTable_exists(reg->treHandlers, ident))
+    nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
+
+    const char** ident;
+    int i = 1;
+    int ok = 1;
+    if (!reg)
     {
-        printf("Warning, overriding [%s] hook", ident);
-        
+        return NITF_FAILURE;
     }
-#endif
-
-    return nitf_HashTable_insert(reg->treHandlers, ident, fn, error);
-}
-
-NITFAPI(NITF_BOOL)
-    nitf_PluginRegistry_registerDecompCreator(nitf_PluginRegistry* reg,
-                                              const char* ident,
-               NITF_PLUGIN_DECOMPRESSION_CONSTRUCT_FUNCTION fn, 
-                                              nitf_Error* error)
-{
-#if NITF_DEBUG_PLUGIN_REG
-    if (nitf_HashTable_exists(reg->decompressionHandlers, ident))
+    if ( (ident = (*init)(error)) == NULL)
     {
-        printf("Warning, overriding [%s] hook", ident);
-        
+        return NITF_FAILURE;
     }
-#endif
-
-    return nitf_HashTable_insert(reg->decompressionHandlers, ident, fn, error);
-}
-
-
-NITFAPI(NITF_BOOL)
-    nitf_PluginRegistry_registerCompCreator(nitf_PluginRegistry* reg,
-                                            const char* ident,
-               NITF_PLUGIN_COMPRESSION_CONSTRUCT_FUNCTION fn, 
-                                            nitf_Error* error)
-{
     
-#if NITF_DEBUG_PLUGIN_REG
-    if (nitf_HashTable_exists(reg->compressionHandlers, ident))
+    if (!ident[0] || (strcmp(ident[0], NITF_PLUGIN_TRE_KEY) != 0))
     {
-        printf("Warning, overriding [%s] hook", ident);
-        
+        nitf_Error_initf(error,
+                         NITF_CTXT,
+                         NITF_ERR_INVALID_OBJECT,
+                         "Expected a TRE identity"); 
+        return NITF_FAILURE;
     }
-#endif
 
-    return nitf_HashTable_insert(reg->compressionHandlers, ident, fn, error);
+    for (; ident[i] != NULL; ++i)
+    {
+#if NITF_DEBUG_PLUGIN_REG
+        if (nitf_HashTable_exists(reg->treHandlers, ident[i]))
+        {
+            printf("Warning, static handler overriding [%s] hook", ident);
+        }
+#endif
+        ok &= nitf_HashTable_insert(reg->treHandlers, ident[i], handle, error);
+    }
+
+    return ok;
+
 }
 
 

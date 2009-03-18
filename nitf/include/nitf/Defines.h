@@ -135,5 +135,14 @@
     static nitf_TREDescriptionSet descriptionSet = { 0, descriptions }; \
     NITF_DECLARE_PLUGIN(_Tre)
 
+/**
+ * Reference a TRE that has been statically compiled inside of a library
+ *
+ */
+#define NITF_TRE_STATIC_HANDLER_REF(_Tre) \
+    extern char** _Tre##_init(nitf_Error*); \
+    extern nitf_TREHandler* _Tre##_handler(nitf_Error*)
+
+
 
 #endif
