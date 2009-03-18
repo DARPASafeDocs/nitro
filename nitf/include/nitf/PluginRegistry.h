@@ -14,9 +14,6 @@
 
 /*  The environment variable for the plugin path  */
 #   define NITF_PLUGIN_PATH "NITF_PLUGIN_PATH"
-/*  The default location for plugins if none is specified  */
-#   define NITF_DEFAULT_PLUGIN_PATH "./plugins/"
-
 
 NITF_CXX_GUARD
 
@@ -40,7 +37,8 @@ typedef struct _protected_nitf_PluginRegistry
     nitf_HashTable *treHandlers;
     nitf_HashTable *compressionHandlers;
     nitf_HashTable *decompressionHandlers;
-    /* nitf_HashTable *desHandlers; */
+
+    nitf_List* dsos;
 
 }
 nitf_PluginRegistry;
@@ -133,7 +131,7 @@ nitf_PluginRegistry_unload(nitf_PluginRegistry * reg, nitf_Error * error);
  *  had_error to 1.
  *
  *  \param reg This is the registry
- *  \param tre_id  This is the ID of the tre (the plugin will have same name)
+ *  \param ident  This is the ID of the tre (the plugin will have same name)
  *  \param had_error If an error occured, this will be 1, otherwise it is 0
  *  \param error An error to be populated if tre_main is NULL and return val
  *    is -1
@@ -141,8 +139,9 @@ nitf_PluginRegistry_unload(nitf_PluginRegistry * reg, nitf_Error * error);
  */
 NITFPROT(nitf_TREHandler*)
 nitf_PluginRegistry_retrieveTREHandler(nitf_PluginRegistry * reg,
-                                       const char *tre_id,
-                                       int *had_error, nitf_Error * error);
+                                       const char *ident,
+                                       int *hadError, 
+                                       nitf_Error * error);
 
 
 /*!
@@ -153,7 +152,7 @@ nitf_PluginRegistry_retrieveTREHandler(nitf_PluginRegistry * reg,
  *  had_error to 1.
  *
  *  \param reg This is the registry
- *  \param decomp_id  This is the ID (e.g., C8)
+ *  \param ident  This is the ID (e.g., C8)
  *  \param had_error If an error occured, this will be 1, otherwise it is 0
  *  \param error An error to be populated if tre_main is NULL and return val
  *    is -1
@@ -161,19 +160,19 @@ nitf_PluginRegistry_retrieveTREHandler(nitf_PluginRegistry * reg,
  */
 NITFPROT(NITF_PLUGIN_DECOMPRESSION_CONSTRUCT_FUNCTION)
 nitf_PluginRegistry_retrieveDecompConstructor(nitf_PluginRegistry * reg,
-                                              const char *comp_id,
-                                              int *had_error,
+                                              const char *ident,
+                                              int *hadError,
                                               nitf_Error * error);
 
 
-/*  There is no destructor currently, the object is statically created in
-     the plugin
-NITFPROT(NITF_PLUGIN_DECOMPRESSION_DESTRUCT_FUNCTION)
-     nitf_PluginRegistry_retrieveDecompDestructor(nitf_PluginRegistry* reg,
-        const char* comp_id,
-        int *had_error,
-        nitf_Error* error);
-*/
+
+
+NITFPROT(NITF_PLUGIN_COMPRESSION_CONSTRUCT_FUNCTION)
+nitf_PluginRegistry_retrieveCompConstructor(nitf_PluginRegistry * reg,
+                                            const char *ident,
+                                            int *hadError,
+                                            nitf_Error * error);
+
 
 
 

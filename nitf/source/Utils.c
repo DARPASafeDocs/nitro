@@ -15,7 +15,7 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, If not,
+ * License along with this program; if not,
  * see <http://www.gnu.org/licenses/>.
  *
  */
@@ -25,7 +25,7 @@
 NITFAPI(nitf_List*) nitf_Utils_splitString(
         char *str, unsigned int max, nitf_Error* error)
 {
-    unsigned int count;
+    unsigned int count = 0;
     nitf_List *parts;
     char *op, *cur, *end;
     size_t strLen;

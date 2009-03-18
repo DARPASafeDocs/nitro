@@ -2,7 +2,7 @@
 #define __NITF_PLUGIN_IDENTIFIER_H__
 
 #define NITF_PLUGIN_INIT_SUFFIX "_init"
-#define NITF_PLUGIN_CLEANUP_SUFFIX "_cleanup"
+#define NITF_PLUGIN_CLEANUP "cleanup"
 #define NITF_PLUGIN_HOOK_SUFFIX "_handler"
 #define NITF_PLUGIN_CONSTRUCT_SUFFIX "_construct"
 #define NITF_PLUGIN_DESTRUCT_SUFFIX "_destruct"
@@ -86,6 +86,13 @@ typedef int (*NITF_PLUGIN_COMPRESSION_HANDLER_FUNCTION)
   On error, the error object is initialized.
 */
 typedef void * (*NITF_PLUGIN_DECOMPRESSION_CONSTRUCT_FUNCTION)
+(
+    const char *compressionType,
+    nitf_Error* error
+);
+
+
+typedef void * (*NITF_PLUGIN_COMPRESSION_CONSTRUCT_FUNCTION)
 (
     const char *compressionType,
     nitf_Error* error
