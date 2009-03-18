@@ -168,12 +168,13 @@ NITFPRIV(NITF_BOOL) insertPlugin(nitf_PluginRegistry * reg,
 NITFPRIV(nitf_PluginRegistry *) implicitConstruct(nitf_Error * error)
 {
 
+
     const char *pluginEnvVar;
     
     /*  Create the registry object  */
     nitf_PluginRegistry *reg =
         (nitf_PluginRegistry *) NITF_MALLOC(sizeof(nitf_PluginRegistry));
-    
+
     /*  If we have a memory problem, init our error struct and return  */
     if (!reg)
     {
@@ -499,17 +500,12 @@ NITFAPI(NITF_BOOL)
 
 
 NITFAPI(NITF_BOOL)
-nitf_PluginRegistry_registerTRECreator(const char* ident, 
+nitf_PluginRegistry_registerTREHandler(nitf_PluginRegistry* reg,
+                                       const char* ident, 
                                        NITF_PLUGIN_TRE_HANDLER_FUNCTION fn,
                                        nitf_Error * error)
 {
     
-    nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
-    if (reg)
-    {
-        return NITF_FAILURE;
-    }
-
 #if NITF_DEBUG_PLUGIN_REG
     if (nitf_HashTable_exists(reg->treHandlers, ident))
     {
@@ -522,17 +518,11 @@ nitf_PluginRegistry_registerTRECreator(const char* ident,
 }
 
 NITFAPI(NITF_BOOL)
-    nitf_PluginRegistry_registerDecompCreator(const char* ident,
+    nitf_PluginRegistry_registerDecompCreator(nitf_PluginRegistry* reg,
+                                              const char* ident,
                NITF_PLUGIN_DECOMPRESSION_CONSTRUCT_FUNCTION fn, 
                                               nitf_Error* error)
 {
-    
-    nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
-    if (reg)
-    {
-        return NITF_FAILURE;
-    }
-
 #if NITF_DEBUG_PLUGIN_REG
     if (nitf_HashTable_exists(reg->decompressionHandlers, ident))
     {
@@ -546,17 +536,12 @@ NITFAPI(NITF_BOOL)
 
 
 NITFAPI(NITF_BOOL)
-    nitf_PluginRegistry_registerCompCreator(const char* ident,
+    nitf_PluginRegistry_registerCompCreator(nitf_PluginRegistry* reg,
+                                            const char* ident,
                NITF_PLUGIN_COMPRESSION_CONSTRUCT_FUNCTION fn, 
                                             nitf_Error* error)
 {
     
-    nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
-    if (reg)
-    {
-        return NITF_FAILURE;
-    }
-
 #if NITF_DEBUG_PLUGIN_REG
     if (nitf_HashTable_exists(reg->compressionHandlers, ident))
     {
@@ -808,21 +793,19 @@ nitf_PluginRegistry_retrieveTREHandler(nitf_PluginRegistry * reg,
     nitf_TREHandler* theHandler;
     /*  We get back a pair from the hash table  */
     nitf_Pair *pair;
-    
     /*  We are trying to find tre_main  */
     NITF_PLUGIN_TRE_HANDLER_FUNCTION treMain = NULL;
     
     /*  No error has occurred (yet)  */
     *hadError = 0;
-    
+
     if (!nitf_HashTable_exists(reg->treHandlers, treIdent))
     {
-        *hadError = 1;
         return NULL;
     }
     /*  Lookup the pair from the hash table, by the tre_id  */
     pair = nitf_HashTable_find(reg->treHandlers, treIdent);
-    
+
     /*  If nothing is there, we dont have a handler, plain and simple  */
     if (!pair)
         return NULL;
@@ -831,6 +814,10 @@ nitf_PluginRegistry_retrieveTREHandler(nitf_PluginRegistry * reg,
     treMain = (NITF_PLUGIN_TRE_HANDLER_FUNCTION) pair->data;
 
     theHandler = (*treMain)(error);
+    if (!theHandler)
+    {
+        *hadError = 1;
+    }
     return theHandler;
 }
 

@@ -22,6 +22,7 @@
 
 #include <import/nitf.h>
 #include "nitf/TREUtils.h"
+
 #define SHOW(X) printf("%s=[%s]\n", #X, ((X==0)?"(nul)":X))
 #define SHOWI(X) printf("%s=[%ld]\n", #X, X)
 #define SHOWLL(X) printf("%s=[%lld]\n", #X, X)
