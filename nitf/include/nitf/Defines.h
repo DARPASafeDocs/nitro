@@ -117,7 +117,6 @@
                                         &_Tre##Handler,error)) \
        return NULL; return ident; \
     } \
-    NITFAPI(void) cleanup(void){} \
     NITFAPI(nitf_TREHandler*) _Tre##_handler(nitf_Error* error) { \
         return &_Tre##Handler; \
     }

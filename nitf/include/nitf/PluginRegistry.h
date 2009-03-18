@@ -87,7 +87,35 @@ NITFPROT(nitf_PluginRegistry *)
 NITFPROT(NITF_BOOL)
     nitf_PluginRegistry_load(nitf_PluginRegistry * reg, nitf_Error * error);
 
+/*!
+ *  This function allows you to register your own TRE creators.  This function
+ *  will override any handlers that are currently handling the identifier.
+ */
+NITFAPI(NITF_BOOL)
+    nitf_PluginRegistry_registerTRECreator(const char* ident,
+                                           NITF_PLUGIN_TRE_HANDLER_FUNCTION fn,
+                                           nitf_Error* error);
 
+/*!
+ *  This function allows you to register your own decompression creators.
+ *  This function will override any handlers that are currently handling 
+ *  the identifier.
+ */
+
+NITFAPI(NITF_BOOL)
+    nitf_PluginRegistry_registerDecompCreator(const char* ident,
+               NITF_PLUGIN_DECOMPRESSION_CONSTRUCT_FUNCTION fn, 
+                                              nitf_Error* error);
+    
+/*!
+ *  This function allows you to register your own TRE creators.  This function
+ *  will override any handlers that are currently handling the identifier.
+ */
+NITFAPI(NITF_BOOL)
+    nitf_PluginRegistry_registerCompCreator(const char* ident,
+                    NITF_PLUGIN_COMPRESSION_CONSTRUCT_FUNCTION fn, 
+                                            nitf_Error* error);
+   
 /*!
  *  Public function to load the registry with plugins in the given directory.
  *  This will walk the DLL path and search
