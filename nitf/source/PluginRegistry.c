@@ -496,6 +496,79 @@ NITFAPI(NITF_BOOL)
     
 }
 
+
+
+NITFAPI(NITF_BOOL)
+nitf_PluginRegistry_registerTRECreator(const char* ident, 
+                                       NITF_PLUGIN_TRE_HANDLER_FUNCTION fn,
+                                       nitf_Error * error)
+{
+    
+    nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
+    if (reg)
+    {
+        return NITF_FAILURE;
+    }
+
+#if NITF_DEBUG_PLUGIN_REG
+    if (nitf_HashTable_exists(reg->treHandlers, ident))
+    {
+        printf("Warning, overriding [%s] hook", ident);
+        
+    }
+#endif
+
+    return nitf_HashTable_insert(reg->treHandlers, ident, fn, error);
+}
+
+NITFAPI(NITF_BOOL)
+    nitf_PluginRegistry_registerDecompCreator(const char* ident,
+               NITF_PLUGIN_DECOMPRESSION_CONSTRUCT_FUNCTION fn, 
+                                              nitf_Error* error)
+{
+    
+    nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
+    if (reg)
+    {
+        return NITF_FAILURE;
+    }
+
+#if NITF_DEBUG_PLUGIN_REG
+    if (nitf_HashTable_exists(reg->decompressionHandlers, ident))
+    {
+        printf("Warning, overriding [%s] hook", ident);
+        
+    }
+#endif
+
+    return nitf_HashTable_insert(reg->decompressionHandlers, ident, fn, error);
+}
+
+
+NITFAPI(NITF_BOOL)
+    nitf_PluginRegistry_registerCompCreator(const char* ident,
+               NITF_PLUGIN_COMPRESSION_CONSTRUCT_FUNCTION fn, 
+                                            nitf_Error* error)
+{
+    
+    nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
+    if (reg)
+    {
+        return NITF_FAILURE;
+    }
+
+#if NITF_DEBUG_PLUGIN_REG
+    if (nitf_HashTable_exists(reg->compressionHandlers, ident))
+    {
+        printf("Warning, overriding [%s] hook", ident);
+        
+    }
+#endif
+
+    return nitf_HashTable_insert(reg->compressionHandlers, ident, fn, error);
+}
+
+
 NITFPROT(NITF_BOOL) 
     nitf_PluginRegistry_internalLoadDir(nitf_PluginRegistry * reg,
                                         const char *dirName,
