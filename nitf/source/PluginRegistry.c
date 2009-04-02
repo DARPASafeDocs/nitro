@@ -107,7 +107,7 @@ NITFPROT(nitf_PluginRegistry *)
 }
 
 NITFPRIV(NITF_BOOL) insertPlugin(nitf_PluginRegistry * reg,
-                                 const char **ident,
+                                 char **ident,
                                  nitf_DLL * dll, 
                                  nitf_Error * error)
 {
@@ -140,9 +140,10 @@ NITFPRIV(NITF_BOOL) insertPlugin(nitf_PluginRegistry * reg,
     }
     else
     {
-        nitf_Error_init(error,
-                        "Other handlers not yet supported!",
-                        NITF_CTXT, NITF_ERR_UNK);
+        nitf_Error_initf(error,
+                         NITF_CTXT,
+                         NITF_ERR_INVALID_OBJECT,
+                         "The identity [%s] is not supported", ident[0]);
         return NITF_FAILURE;
     }
     /* Go through each identity and add it as a creator */
@@ -317,11 +318,11 @@ NITFPRIV(void) implicitDestruct(nitf_PluginRegistry ** reg)
  *  when the DSO is loaded
  */
 
-NITFPRIV(const char **) doInit(nitf_DLL * dll,
+NITFPRIV(char **) doInit(nitf_DLL * dll,
                                const char *prefix, nitf_Error * error)
 {
     NITF_PLUGIN_INIT_FUNCTION init;
-    const char **ident;
+    char **ident;
 
     char name[NITF_MAX_PATH];
     memset(name, 0, NITF_MAX_PATH);
@@ -335,7 +336,7 @@ NITFPRIV(const char **) doInit(nitf_DLL * dll,
 
     /*  Else, call it  */
 
-    ident = init(error);
+    ident = (*init)(error);
     if (!ident)
     {
         nitf_Error_initf(error,
@@ -440,7 +441,7 @@ NITFAPI(NITF_BOOL)
     int ok;
     int i, begin, end;
     nitf_DLL *dll;
-    const char **ident;
+    char **ident;
     nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
 
     /*  Construct the DLL object  */
@@ -507,7 +508,7 @@ nitf_PluginRegistry_registerTREHandler(NITF_PLUGIN_INIT_FUNCTION init,
     
     nitf_PluginRegistry* reg = nitf_PluginRegistry_getInstance(error);
 
-    const char** ident;
+    char** ident;
     int i = 1;
     int ok = 1;
     if (!reg)

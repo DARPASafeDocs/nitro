@@ -43,10 +43,10 @@ NITF_CXX_GUARD
  * \return              a nitf_WriteHandler*, or NULL on error
  */
 nitf_WriteHandler* nitf_StreamIOWriteHandler_construct(
-        nitf_IOHandle inputHandle,
-        nitf_Uint64 offset,
-        nitf_Uint64 bytes,
-        nitf_Error *error);
+    nitf_IOHandle ioHandle,
+    nitf_Uint64 offset,
+    nitf_Uint64 bytes,
+    nitf_Error *error);
 
 
 NITF_CXX_ENDGUARD

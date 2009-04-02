@@ -98,8 +98,8 @@ nitf_Field;
  *  Construct a new field.  Return the field, unless an error occurred.
  */
 NITFAPI(nitf_Field *) nitf_Field_construct(size_t length,
-        nitf_FieldType type,
-        nitf_Error * error);
+                                           nitf_FieldType type,
+                                           nitf_Error * error);
 
 
 /*!

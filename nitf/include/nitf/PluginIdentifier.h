@@ -31,7 +31,7 @@ typedef void (*NITF_PLUGIN_CLEANUP_FUNCTION) (void);
  *
 typedef int (*NITF_PLUGIN_TRE_HANDLER_FUNCTION)
 (
-    nitf_IOHandle io,
+    nitf_IOInterface* io,
     nitf_TRE * tre,
     struct _nitf_Record* rec,
     nitf_Error * error

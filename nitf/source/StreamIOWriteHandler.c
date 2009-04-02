@@ -25,9 +25,9 @@
 
 typedef struct _WriteHandlerImpl
 {
-    nitf_IOHandle   inputHandle;
-    nitf_Uint64     offset;
-    nitf_Uint64     bytes;
+    nitf_IOHandle     ioHandle;
+    nitf_Uint64       offset;
+    nitf_Uint64       bytes;
 } WriteHandlerImpl;
 
 
@@ -37,7 +37,7 @@ typedef struct _WriteHandlerImpl
  *  Private read implementation for file source.
  */
 NITFPRIV(NITF_BOOL) WriteHandler_write
-    (NITF_DATA * data, nitf_IOHandle io, nitf_Error * error)
+    (NITF_DATA * data, nitf_IOInterface* output, nitf_Error * error)
 {
     WriteHandlerImpl *impl = NULL;
     nitf_Uint64 toWrite;
@@ -58,8 +58,12 @@ NITFPRIV(NITF_BOOL) WriteHandler_write
     /* stream the input to the output in chunks */
     
     /* first, seek to the right spot of the input handle */
-    if (!NITF_IO_SUCCESS(nitf_IOHandle_seek(
-            impl->inputHandle, impl->offset, NITF_SEEK_SET, error)))
+    if (!NITF_IO_SUCCESS(
+            nitf_IOHandle_seek(
+                impl->ioHandle, impl->offset, NITF_SEEK_SET, error
+                )
+            )
+        )
         goto CATCH_ERROR;
 
     toWrite = impl->bytes;
@@ -69,11 +73,11 @@ NITFPRIV(NITF_BOOL) WriteHandler_write
                 (nitf_Uint32) toWrite;
 
         /* read */
-        if (!nitf_IOHandle_read(impl->inputHandle, buf, bytesThisPass, error))
+        if (!nitf_IOHandle_read(impl->ioHandle, buf, bytesThisPass, error))
             goto CATCH_ERROR;
 
         /* write */
-        if (!nitf_IOHandle_write(io, buf, bytesThisPass, error))
+        if (!nitf_IOInterface_write(output, buf, bytesThisPass, error))
             goto CATCH_ERROR;
 
         /* update count */
@@ -97,11 +101,11 @@ NITFPRIV(void) WriteHandler_destruct(NITF_DATA * data)
 }
 
 
-nitf_WriteHandler* nitf_StreamIOWriteHandler_construct(
-        nitf_IOHandle inputHandle,
-        nitf_Uint64 offset,
-        nitf_Uint64 bytes,
-        nitf_Error *error)
+NITFAPI(nitf_WriteHandler*) 
+nitf_StreamIOWriteHandler_construct(nitf_IOHandle ioHandle,
+                                    nitf_Uint64 offset,
+                                    nitf_Uint64 bytes,
+                                    nitf_Error *error)
 {
     nitf_WriteHandler *writeHandler = NULL;
     WriteHandlerImpl *impl = NULL;
@@ -121,11 +125,13 @@ nitf_WriteHandler* nitf_StreamIOWriteHandler_construct(
         goto CATCH_ERROR;
     }
 
-    impl->inputHandle = inputHandle;
+    impl->ioHandle = ioHandle;
     impl->offset = offset;
     impl->bytes = bytes;
 
-    writeHandler = (nitf_WriteHandler *) NITF_MALLOC(sizeof(nitf_WriteHandler));
+    writeHandler = 
+        (nitf_WriteHandler *) NITF_MALLOC(sizeof(nitf_WriteHandler));
+
     if (!writeHandler)
     {
         nitf_Error_init(error, NITF_STRERROR( NITF_ERRNO ),
